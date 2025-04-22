@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/yup'
 import { object, string } from 'yup'
@@ -8,6 +9,7 @@ import api from '@/utils/axios'
 import TextInputField from '@/components/form/TextInputField.vue'
 import PasswordInputField from '@/components/form/PasswordInputField.vue'
 
+const authStore = useAuthStore()
 const router = useRouter()
 const flashMessageStore = useFlashMessageStore()
 
@@ -40,23 +42,38 @@ const [password, passwordAttrs] = defineField('password')
 // Handle form submission
 const onSubmit = handleSubmit(async (formData) => {
   try {
-    await api.post<unknown>('accounts', formData)
+    // Step 1: Attempt to create the account
+    await api.post<unknown>('accounts', formData);
 
-    // Success logic
-    flashMessageStore.setFlashMessage('您已註冊成功', 'success')
-    router.push({ name: 'dashboard' })
+    // Step 2: If signup succeeds, send login request
+    const params = new URLSearchParams()
+    params.append('username', formData.email)
+    params.append('password', formData.password)
+
+    const data = await api.post<{ access_token: string }>('token', params);
+
+    // Step 3: Store token & redirect
+    authStore.setToken(data.access_token)
+    flashMessageStore.setFlashMessage('註冊並登入成功', 'success');
+    router.push({ name: 'home' });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    if (err.response?.data?.error?.fields) {
-      Object.entries(err.response.data.error?.fields).forEach(([field, errorMessage]) => {
-        // Narrow field type to match LoginForm keys
-        if (field in values) {
-          setFieldError(field as keyof SignupBeginForm, errorMessage as string)
-        }
-      })
+    // If error is in registration (account exists, etc.)
+    if (err.response?.config?.url?.includes('accounts')) {
+      if (err.response?.data?.error?.fields) {
+        Object.entries(err.response.data.error.fields).forEach(([field, errorMessage]) => {
+          if (field in values) {
+            setFieldError(field as keyof SignupBeginForm, errorMessage as string);
+          }
+        });
+      }
+    } else if (err.response?.config?.url?.includes('token')) {
+      // Login failed after signup succeeded
+      // flashMessageStore.setFlashMessage('註冊成功但登入失敗，請手動登入', 'error');
+      router.push({ name: 'login' });
     }
   }
-})
+});
 </script>
 <template>
   <div

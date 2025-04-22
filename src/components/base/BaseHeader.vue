@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+const logout = () => {
+  authStore.logout() // Remove token from store and localStorage
+  router.push('/login') // Redirect to login page
+}
 </script>
 
 <template>
@@ -16,12 +25,17 @@ import { RouterLink } from 'vue-router'
       </RouterLink>
       <section class="flex flex-row items-center">
         <div class="p-2">
-          <RouterLink to="/login" class="font-medium text-xl text-primary-400 font-title mx-3"
-            >登入</RouterLink
-          >
-          <RouterLink to="/signup" class="font-medium text-xl text-primary-400 font-title mx-3"
-            >註冊</RouterLink
-          >
+          <div v-if="!authStore.token">
+            <RouterLink to="/login" class="font-medium text-xl text-primary-400 font-title mx-3"
+              >登入</RouterLink
+            >
+            <RouterLink to="/signup" class="font-medium text-xl text-primary-400 font-title mx-3"
+              >註冊</RouterLink
+            >
+          </div>
+          <div v-else>
+            <button @click="logout" class="font-medium text-xl text-primary-400 font-title mx-3">登出</button>
+          </div>
         </div>
       </section>
     </nav>

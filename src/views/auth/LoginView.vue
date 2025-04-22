@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/yup'
 import { object, string } from 'yup'
@@ -9,6 +10,7 @@ import api from '@/utils/axios'
 import TextInputField from '@/components/form/TextInputField.vue'
 import PasswordInputField from '@/components/form/PasswordInputField.vue'
 
+const authStore = useAuthStore()
 const router = useRouter()
 const flashMessageStore = useFlashMessageStore()
 
@@ -41,8 +43,9 @@ const onSubmit = handleSubmit(async (formData) => {
     params.append('username', formData.email)
     params.append('password', formData.password)
 
-    await api.post<unknown>('token', params)
+    const data = await api.post<{ access_token: string }>('token', params);
 
+    authStore.setToken(data.access_token)
     flashMessageStore.setFlashMessage('登入成功', 'success')
     router.push({ name: 'home' })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
