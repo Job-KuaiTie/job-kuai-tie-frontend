@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Chart as ChartJS, registerables } from 'chart.js';
-import annotationPlugin from 'chartjs-plugin-annotation';
+import { Chart as ChartJS, registerables } from 'chart.js'
+import annotationPlugin from 'chartjs-plugin-annotation'
 
 const data = defineModel('data')
 // const testData =
@@ -69,46 +69,51 @@ const chartOptions = {
     x: {
       title: {
         display: true,
-        text: "年齡",
+        text: '年齡',
         font: {
-          size: 18
+          size: 18,
         },
       },
       type: 'linear',
-      position: 'bottom'
-    }, y: {
+      position: 'bottom',
+    },
+    y: {
       title: {
         display: true,
-        text: "投資總額",
+        text: '投資總額',
         font: {
-          size: 18
+          size: 18,
         },
-      }, ticks: {
+      },
+      ticks: {
         callback: function (value: number) {
           const new_value = Math.round((value / 10000) * 10) / 10
-          return new_value + " 萬";
-        }
-      }
-    }
-  }, plugins: {
+          return new_value + ' 萬'
+        },
+      },
+    },
+  },
+  plugins: {
     title: {
       display: true,
       text: '隨著年紀改變的投資總額',
       font: {
-        weight: "bold",
-        size: 22
+        weight: 'bold',
+        size: 22,
       },
-    }, tooltip: {
+    },
+    tooltip: {
       enabled: true,
       callbacks: {
         label: function (tooltipData: { parsed: { x: number; y: number } }) {
           const year = tooltipData.parsed.x
           const value = tooltipData.parsed.y
           const new_value = Math.round((value / 10000) * 10) / 10
-          return ` ${year} 歲時有 ${new_value} 萬元的投資`;
+          return ` ${year} 歲時有 ${new_value} 萬元的投資`
         },
       },
-    }, annotation: {
+    },
+    annotation: {
       annotations: {
         line1: {
           type: 'line',
@@ -116,23 +121,25 @@ const chartOptions = {
           yMax: 0,
           borderColor: 'rgba(255,193,7, 0.4)',
           borderWidth: 4,
-        }
-      }
+        },
+      },
     },
-  }
+  },
 }
 
 const chartData = computed(() => ({
-  datasets: [{
-    label: '當年度投資總額',
-    data: data.value,
-    backgroundColor: 'rgb(255, 99, 132)',
-    borderColor: "rgba(255, 99, 132, 0.2)",
-    showLine: true,
-  }],
-}));
+  datasets: [
+    {
+      label: '當年度投資總額',
+      data: data.value,
+      backgroundColor: 'rgb(255, 99, 132)',
+      borderColor: 'rgba(255, 99, 132, 0.2)',
+      showLine: true,
+    },
+  ],
+}))
 
-ChartJS.register(...registerables, annotationPlugin);
+ChartJS.register(...registerables, annotationPlugin)
 </script>
 
 <template>

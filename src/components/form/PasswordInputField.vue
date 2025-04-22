@@ -19,14 +19,16 @@ const props = defineProps({
 <template>
   <div>
     <FloatLabel variant="on" :class="{ 'focus-within:text-primary-600': props.invalid }">
-      <InputText
+      <Password
         v-model="value"
         :name="props.name"
         :disabled="props.disabled"
         :invalid="props.invalid"
         :fluid="props.fluid"
+        :feedback="false"
         @blur="$emit('blur')"
         class="peer"
+        toggleMask
       />
       <label
         :for="props.name"
