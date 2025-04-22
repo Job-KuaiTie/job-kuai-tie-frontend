@@ -8,12 +8,13 @@ export interface Job {
   max_yearly_salary: number | null
   company_id: string | null
   owner_id: string
-  applied_at: string | null
-  created_at: string
-  updated_at: string
+  applied_at: Date | null
+  created_at: Date
+  updated_at: Date
 }
 
 export interface JobPayload {
+  id?: string | null
   name: string
   description?: string | null
   url?: string | null
@@ -21,5 +22,8 @@ export interface JobPayload {
   min_yearly_salary?: number | null
   max_yearly_salary?: number | null
   company_id?: string | null
+  owner_id?: string | null
   applied_at?: Date | null
+  created_at?: Date | null
+  updated_at?: Date | null
 }

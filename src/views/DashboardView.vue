@@ -8,16 +8,16 @@ import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea';
 import DatePicker from 'primevue/datepicker';
-import type { DataTableRowEditSaveEvent } from 'primevue/datatable'
 
 import api from '@/utils/axios'
 import type { Job, JobPayload } from '@/types/job'
 
-const editingRows = ref([]);
-
 const jobs = ref<Job[]>([])
-const job = ref({});
+const newJob = ref(false);
 const loading = ref(false)
+
+const JobDialog = ref(false);
+const deleteJobDialog = ref(false);
 
 const tiers = [
   { label: '夢想工作', value: 1 },
@@ -33,13 +33,10 @@ const getStatusLabel = (status) => {
   switch (status) {
       case 1:
           return 'success';
-
       case 2:
           return 'warn';
-
       case 3:
           return 'danger';
-
       default:
           return null;
   }
@@ -57,33 +54,64 @@ const fetchJobs = async () => {
   }
 }
 
-
 const formatDate = (dateStr: string | null) => {
   return dateStr ? new Date(dateStr).toLocaleDateString() : '-'
 }
 
-const JobDialog = ref(false);
-const deleteJobDialog = ref(false);
-
-const formData = ref<JobPayload>({
+const jobData = ref<JobPayload>({
+  id: null,
   name: '',
+  description: null,
+  url: null,
   tier: 1,
-  applied_at: null,
   min_yearly_salary: null,
   max_yearly_salary: null,
-  description: '',
+  company_id: null,
+  owner_id: null,
+  applied_at: null,
+  created_at: null,
+  updated_at: null,
 })
 
 // Button actions
 
+const openNewJob = () => {
+  // Shows this is a new job
+  newJob.value = true;
+  JobDialog.value = true;
+};
+
+const onSaveJob = async () => {
+  if (newJob.value) {
+    await onCreateJob()
+  } else {
+    await onEditJob()
+  }
+}
+
 const onCreateJob = async () => {
   try {
-    const response = await api.post<Job>('/jobs', formData.value)
+    const response = await api.post<Job>('/jobs', jobData.value)
     jobs.value.push(response) // update UI with new job
     JobDialog.value = false // close dialog
     resetForm()
   } catch (error) {
     console.error('Create failed:', error)
+  }
+}
+
+const onEditJob = async () => {
+  try {
+    const id = jobData.value.id
+    const response = await api.patch<Job>(`/jobs/${id}`, jobData.value)
+    const index = jobs.value.findIndex(job => job.id === id)
+    if (index !== -1) {
+      jobs.value[index] = response // Update local state
+    }
+    resetForm()
+    JobDialog.value = false // close dialog
+  } catch (error) {
+    console.error('Update failed:', error)
   }
 }
 
@@ -93,41 +121,63 @@ const onCancelDialog = () => {
 }
 
 const resetForm = () => {
-  formData.value = {
+  newJob.value = false; // cancel new job creation
+  jobData.value = {
+    id: null,
     name: '',
+    description: null,
+    url: null,
     tier: 1,
-    applied_at: null,
     min_yearly_salary: null,
     max_yearly_salary: null,
-    description: '',
+    company_id: null,
+    owner_id: null,
+    applied_at: null,
+    created_at: null,
+    updated_at: null,
   }
 }
 
-// DataTableRowEditSaveEvent
-const onEditJob = async (event: DataTableRowEditSaveEvent) => {
-  try {
-    const { data, newData } = event;
-
-    const response = await api.patch<Job>(`/jobs/${data.id}`, newData)
-    const index = jobs.value.findIndex(job => job.id === data.id)
-    if (index !== -1) {
-      jobs.value[index] = response // Update local state
-    }
-  } catch (error) {
-    console.error('Update failed:', error)
+const mapJobData = (data: Job) => {
+  jobData.value = {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    url: data.url,
+    tier: data.tier,
+    applied_at: data.applied_at,
+    min_yearly_salary: data.min_yearly_salary,
+    max_yearly_salary: data.max_yearly_salary,
+    company_id: data.company_id,
+    owner_id: data.owner_id,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
   }
 }
+
+const editJob = (data: Job) => {
+  console.log("Before mapJobData")
+  console.log(data)
+  newJob.value = false;
+  mapJobData(data)
+  console.log("After mapJobData")
+  console.log(data)
+  JobDialog.value = true;
+};
+
+
 const confirmDeleteJob = (data: Job) => {
-  job.value = data;
+  mapJobData(data)
   deleteJobDialog.value = true;
 };
 const onDeleteJob = async () => {
   try {
-    const id = job.value.id
+    const id = jobData.value.id
     await api.delete(`/jobs/${id}`)
     jobs.value = jobs.value.filter(job => job.id !== id) // Remove from local state
     job.value = {}; // Reset the job
     deleteJobDialog.value = false; // close the dialog
+    resetForm()
   } catch (error) {
     console.error('Delete failed:', error)
   }
@@ -140,7 +190,7 @@ onMounted(fetchJobs)
     <Dialog v-model:visible="JobDialog" modal header="新增職缺" :style="{ width: '25rem' }">
       <div class="flex items-center gap-4 mb-4">
           <label for="name" class="font-semibold w-24">職缺名稱</label>
-          <InputText id="name" class="flex-auto" v-model="formData.name" autocomplete="off" />
+          <InputText id="name" class="flex-auto" v-model="jobData.name" autocomplete="off" />
       </div>
       <div class="flex items-center gap-4 mb-4">
           <label for="tier" class="font-semibold w-24">優先順位</label>
@@ -151,36 +201,36 @@ onMounted(fetchJobs)
             optionLabel="label"
             optionValue="value"
             placeholder="選擇順位"
-            v-model="formData.tier"
+            v-model="jobData.tier"
             required
           />
       </div>
       <div class="flex items-center gap-4 mb-4">
           <label for="applied_at" class="font-semibold w-24">投遞時間</label>
-          <DatePicker id="applied_at" class="flex-auto" v-model="formData.applied_at"/>
+          <DatePicker id="applied_at" class="flex-auto" v-model="jobData.applied_at"/>
       </div>
       <div class="flex items-center gap-4 mb-4">
           <label for="min_yearly_salary" class="font-semibold w-24">年薪下限</label>
-          <InputNumber id="min_yearly_salary" class="flex-auto" v-model="formData.min_yearly_salary" prefix="NTD "/>
+          <InputNumber id="min_yearly_salary" class="flex-auto" v-model="jobData.min_yearly_salary" prefix="NTD "/>
       </div>
       <div class="flex items-center gap-4 mb-4">
           <label for="max_yearly_salary" class="font-semibold w-24">年薪上限</label>
-          <InputNumber id="max_yearly_salary" class="flex-auto" v-model="formData.max_yearly_salary" prefix="NTD "/>
+          <InputNumber id="max_yearly_salary" class="flex-auto" v-model="jobData.max_yearly_salary" prefix="NTD "/>
       </div>
       <div class="flex items-center gap-4 mb-4">
           <label for="description" class="font-semibold w-24">職缺描述</label>
-          <Textarea id="description" class="flex-auto" v-model="formData.description" autocomplete="off" rows="5" cols="30"/>
+          <Textarea id="description" class="flex-auto" v-model="jobData.description" autocomplete="off" rows="5" cols="30"/>
       </div>
       <div class="flex justify-end gap-2">
           <Button type="button" label="Cancel" severity="secondary" @click="onCancelDialog"></Button>
-          <Button type="button" label="Save" @click="onCreateJob" />
+          <Button type="button" label="Save" @click="onSaveJob" />
       </div>
   </Dialog>
   <Dialog v-model:visible="deleteJobDialog" :style="{ width: '25rem' }" header="確認刪除？" :modal="true">
           <div class="flex items-center gap-4">
               <i class="pi pi-exclamation-triangle !text-3xl" />
               <span v-if="job"
-                  >你確定你想要刪除 <b>{{ job.name }}</b
+                  >你確定你想要刪除 <span class="font-semibold">{{ jobData.name }}</span
                   >?</span
               >
           </div>
@@ -193,22 +243,12 @@ onMounted(fetchJobs)
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">職缺清單</h2>
       <!-- <Button label="新增職缺" icon="pi pi-plus" @click="onCreateJob" /> -->
-      <Button label="新增職缺" icon="pi pi-plus" @click="JobDialog = true" />
+      <Button label="新增職缺" icon="pi pi-plus" @click="openNewJob" />
     </div>
-    <DataTable v-model:editingRows="editingRows" :value="jobs" tableStyle="min-width: 60rem" resizableColumns columnResizeMode="expand" :loading="loading" editMode="row" dataKey="id" @row-edit-save="onEditJob">
+    <DataTable :value="jobs" tableStyle="min-width: 60rem"  :loading="loading" dataKey="id">
       <Column field="name" header="職缺名稱" sortable>
-        <template #editor="{ data, field }">
-          <InputText v-model="data[field]"/>
-        </template>
       </Column>
       <Column field="tier" header="優先順位" sortable>
-          <template #editor="{ data, field }">
-              <Select v-model="data[field]" :options="tiers" optionLabel="label" optionValue="value" placeholder="選擇順位">
-                  <template #option="slotProps">
-                      <Tag :value="getTierLabel(slotProps.option.value)" :severity="getStatusLabel(slotProps.option.value)" />
-                  </template>
-              </Select>
-          </template>
           <template #body="slotProps">
             <Tag
               :value="getTierLabel(slotProps.data.tier)"
@@ -217,31 +257,19 @@ onMounted(fetchJobs)
           </template>
       </Column>
       <Column field="min_yearly_salary" header="年薪下限（NTD）" sortable>
-        <template #editor="{ data, field }">
-          <InputNumber v-model="data[field]"/>
-        </template>
       </Column>
       <Column field="max_yearly_salary" header="年薪上限（NTD）" sortable>
-        <template #editor="{ data, field }">
-          <InputNumber v-model="data[field]"/>
-        </template>
       </Column>
       <Column field="applied_at" header="投遞時間" sortable>
-        <template #editor="{ data, field }">
-          <DatePicker v-model="data[field]"/>
-        </template>
         <template #body="{ data }">
           {{ formatDate(data.applied_at) }}
         </template>
       </Column>
       <Column field="description" header="職缺描述" sortable>
-        <template #editor="{ data, field }">
-          <Textarea v-model="data[field]"/>
-        </template>
       </Column>
-      <Column :rowEditor="true" bodyStyle="text-align:center"></Column>
       <Column :exportable="false">
         <template #body="slotProps">
+            <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editJob(slotProps.data)" />
             <Button icon="pi pi-trash" text severity="danger" @click="confirmDeleteJob(slotProps.data)" />
         </template>
     </Column>
