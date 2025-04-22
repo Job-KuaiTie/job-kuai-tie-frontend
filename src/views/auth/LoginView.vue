@@ -43,7 +43,7 @@ const onSubmit = handleSubmit(async (formData) => {
     params.append('username', formData.email)
     params.append('password', formData.password)
 
-    const data = await api.post<{ access_token: string }>('token', params);
+    const data = await api.post<{ access_token: string }>('token', params)
 
     authStore.setToken(data.access_token)
     flashMessageStore.setFlashMessage('登入成功', 'success')

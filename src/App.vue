@@ -7,7 +7,7 @@ import FlashMessage from '@/components/base/FlashMessage.vue'
 
 <template>
   <BaseHeader />
-  <main class="flex flex-col items-center py-4 bg-zinc-50 flex-1">
+  <main class="flex flex-col items-center py-4 bg-primary-50 flex-1">
     <FlashMessage />
     <RouterView />
   </main>

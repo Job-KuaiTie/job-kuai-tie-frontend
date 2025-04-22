@@ -42,9 +42,7 @@ apiClient.interceptors.response.use(
       // 2. Handle authentication errors
       else if (status === 401) {
         flashMessageStore.setFlashMessage('操作錯誤，請再試一次。', 'error')
-      }
-
-      else if (status === 403) {
+      } else if (status === 403) {
         flashMessageStore.setFlashMessage('您沒有權限執行此操作，請重新登入。', 'error')
       }
 
@@ -118,7 +116,6 @@ const remove = async <T>(url: string, config?: Record<string, unknown>): Promise
   }
 }
 
-
 // const setAuthToken = (token: string | null) => {
 //   if (token) {
 //     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -132,6 +129,6 @@ export default {
   get,
   post,
   patch,
-  delete: remove,  // 'delete' is a reserved word, so we alias it
+  delete: remove, // 'delete' is a reserved word, so we alias it
   // setAuthToken,
 }

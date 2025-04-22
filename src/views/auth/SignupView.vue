@@ -43,19 +43,19 @@ const [password, passwordAttrs] = defineField('password')
 const onSubmit = handleSubmit(async (formData) => {
   try {
     // Step 1: Attempt to create the account
-    await api.post<unknown>('accounts', formData);
+    await api.post<unknown>('accounts', formData)
 
     // Step 2: If signup succeeds, send login request
     const params = new URLSearchParams()
     params.append('username', formData.email)
     params.append('password', formData.password)
 
-    const data = await api.post<{ access_token: string }>('token', params);
+    const data = await api.post<{ access_token: string }>('token', params)
 
     // Step 3: Store token & redirect
     authStore.setToken(data.access_token)
-    flashMessageStore.setFlashMessage('註冊並登入成功', 'success');
-    router.push({ name: 'home' });
+    flashMessageStore.setFlashMessage('註冊並登入成功', 'success')
+    router.push({ name: 'home' })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     // If error is in registration (account exists, etc.)
@@ -63,17 +63,17 @@ const onSubmit = handleSubmit(async (formData) => {
       if (err.response?.data?.error?.fields) {
         Object.entries(err.response.data.error.fields).forEach(([field, errorMessage]) => {
           if (field in values) {
-            setFieldError(field as keyof SignupBeginForm, errorMessage as string);
+            setFieldError(field as keyof SignupBeginForm, errorMessage as string)
           }
-        });
+        })
       }
     } else if (err.response?.config?.url?.includes('token')) {
       // Login failed after signup succeeded
       // flashMessageStore.setFlashMessage('註冊成功但登入失敗，請手動登入', 'error');
-      router.push({ name: 'login' });
+      router.push({ name: 'login' })
     }
   }
-});
+})
 </script>
 <template>
   <div

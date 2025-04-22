@@ -11,11 +11,10 @@ const logout = () => {
   router.push('/login') // Redirect to login page
 }
 const isLoggedIn = computed(() => !!authStore.token)
-
 </script>
 
 <template>
-  <header class="flex flex-row justify-center bg-primary-50 p-4">
+  <header class="flex flex-row justify-center bg-primary-50 p-4 border-b-2 border-amber-200">
     <nav class="flex flex-row justify-between w-screen mx-4 max-w-5xl">
       <RouterLink to="/" class="hover:bg-inherit">
         <img
@@ -37,7 +36,9 @@ const isLoggedIn = computed(() => !!authStore.token)
             >
           </div>
           <div v-else>
-            <button @click="logout" class="font-medium text-xl text-primary-400 font-title mx-3">登出</button>
+            <button @click="logout" class="font-medium text-xl text-primary-400 font-title mx-3">
+              登出
+            </button>
           </div>
         </div>
       </section>
