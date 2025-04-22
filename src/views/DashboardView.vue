@@ -16,10 +16,32 @@ const jobs = ref<Job[]>([])
 const loading = ref(false)
 
 const tiers = [
-  { label: '夢想工作', value: '1' },
-  { label: '務實選擇', value: '2' },
-  { label: '保底放心', value: '3' },
+  { label: '夢想工作', value: 1 },
+  { label: '務實選擇', value: 2 },
+  { label: '保底放心', value: 3 },
 ]
+const getTierLabel = (value: number) => {
+  const tier = tiers.find(t => t.value === value)
+  console.log(tier)
+  console.log(value)
+  return tier ? tier.label : value
+}
+
+const getStatusLabel = (status) => {
+  switch (status) {
+      case 1:
+          return 'success';
+
+      case 2:
+          return 'warn';
+
+      case 3:
+          return 'danger';
+
+      default:
+          return null;
+  }
+};
 
 const fetchJobs = async () => {
   loading.value = true
@@ -33,12 +55,6 @@ const fetchJobs = async () => {
   }
 }
 
-const formatSalaryRange = (min: number | null, max: number | null) => {
-  if (min && max) return `$${min} - $${max}`
-  if (min) return `≥ $${min}`
-  if (max) return `≤ $${max}`
-  return '-'
-}
 
 const formatDate = (dateStr: string | null) => {
   return dateStr ? new Date(dateStr).toLocaleDateString() : '-'
@@ -110,7 +126,7 @@ onMounted(fetchJobs)
 <template>
   <div class="card">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold">職缺清單</h2>
+      <h2 class="text-xl font-semibold">職缺清單</h2>
       <!-- <Button label="新增職缺" icon="pi pi-plus" @click="onCreateJob" /> -->
       <Button label="新增職缺" icon="pi pi-plus" @click="visible = true" />
         <Dialog v-model:visible="visible" modal header="新增職缺" :style="{ width: '25rem' }">
@@ -135,11 +151,11 @@ onMounted(fetchJobs)
                 <DatePicker id="applied_at" class="flex-auto" v-model="formData.applied_at"/>
             </div>
             <div class="flex items-center gap-4 mb-4">
-                <label for="min_yearly_salary" class="font-semibold w-24">最低年薪</label>
+                <label for="min_yearly_salary" class="font-semibold w-24">年薪下限</label>
                 <InputNumber id="min_yearly_salary" class="flex-auto" v-model="formData.min_yearly_salary" suffix=" 元"/>
             </div>
             <div class="flex items-center gap-4 mb-4">
-                <label for="max_yearly_salary" class="font-semibold w-24">最高年薪</label>
+                <label for="max_yearly_salary" class="font-semibold w-24">年薪上限</label>
                 <InputNumber id="max_yearly_salary" class="flex-auto" v-model="formData.max_yearly_salary" suffix=" 元"/>
             </div>
             <div class="flex items-center gap-4 mb-4">
@@ -154,12 +170,23 @@ onMounted(fetchJobs)
     </div>
     <DataTable :value="jobs" tableStyle="min-width: 60rem" :loading="loading">
       <Column field="name" header="職缺名稱" sortable></Column>
-      <Column field="tier" header="優先順位" sortable></Column>
-      <Column header="薪資範圍">
-        <template #body="{ data }">
-          {{ formatSalaryRange(data.min_yearly_salary, data.max_yearly_salary) }}
-        </template>
+      <Column field="tier" header="優先順位" sortable>
+          <!-- <template #editor="{ data, field }">
+              <Select v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value" placeholder="Select a Status" fluid>
+                  <template #option="slotProps">
+                      <Tag :value="slotProps.option.value" :severity="getStatusLabel(slotProps.option.value)" />
+                  </template>
+              </Select>
+          </template> -->
+          <template #body="slotProps">
+            <Tag
+              :value="getTierLabel(slotProps.data.tier)"
+              :severity="getStatusLabel(slotProps.data.tier)"
+            />
+          </template>
       </Column>
+      <Column field="min_yearly_salary" header="年薪下限（NTD）" sortable></Column>
+      <Column field="max_yearly_salary" header="年薪上限（NTD）" sortable></Column>
       <Column field="applied_at" header="投遞時間" sortable>
         <template #body="{ data }">
           {{ formatDate(data.applied_at) }}

@@ -8,7 +8,7 @@ const router = useRouter()
 
 const logout = () => {
   authStore.logout() // Remove token from store and localStorage
-  router.push('/login') // Redirect to login page
+  router.push('/home') // Redirect to login page
 }
 const isLoggedIn = computed(() => !!authStore.token)
 </script>
