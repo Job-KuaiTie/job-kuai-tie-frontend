@@ -8,9 +8,12 @@ import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea';
 import DatePicker from 'primevue/datepicker';
+import type { DataTableRowEditSaveEvent } from 'primevue/datatable'
 
 import api from '@/utils/axios'
 import type { Job, JobPayload } from '@/types/job'
+
+const editingRows = ref([]);
 
 const jobs = ref<Job[]>([])
 const loading = ref(false)
@@ -22,8 +25,6 @@ const tiers = [
 ]
 const getTierLabel = (value: number) => {
   const tier = tiers.find(t => t.value === value)
-  console.log(tier)
-  console.log(value)
   return tier ? tier.label : value
 }
 
@@ -99,10 +100,13 @@ const resetForm = () => {
   }
 }
 
-const onEditJob = async (id: string, updatedData: Partial<JobPayload>) => {
+// DataTableRowEditSaveEvent
+const onEditJob = async (event: DataTableRowEditSaveEvent) => {
   try {
-    const response = await api.patch<Job>(`/jobs/${id}`, updatedData)
-    const index = jobs.value.findIndex(job => job.id === id)
+    const { data, newData } = event;
+
+    const response = await api.patch<Job>(`/jobs/${data.id}`, newData)
+    const index = jobs.value.findIndex(job => job.id === data.id)
     if (index !== -1) {
       jobs.value[index] = response // Update local state
     }
@@ -142,6 +146,7 @@ onMounted(fetchJobs)
                   :options="tiers"
                   optionLabel="label"
                   optionValue="value"
+                  placeholder="選擇順位"
                   v-model="formData.tier"
                   required
                 />
@@ -152,11 +157,11 @@ onMounted(fetchJobs)
             </div>
             <div class="flex items-center gap-4 mb-4">
                 <label for="min_yearly_salary" class="font-semibold w-24">年薪下限</label>
-                <InputNumber id="min_yearly_salary" class="flex-auto" v-model="formData.min_yearly_salary" suffix=" 元"/>
+                <InputNumber id="min_yearly_salary" class="flex-auto" v-model="formData.min_yearly_salary" prefix="NTD "/>
             </div>
             <div class="flex items-center gap-4 mb-4">
                 <label for="max_yearly_salary" class="font-semibold w-24">年薪上限</label>
-                <InputNumber id="max_yearly_salary" class="flex-auto" v-model="formData.max_yearly_salary" suffix=" 元"/>
+                <InputNumber id="max_yearly_salary" class="flex-auto" v-model="formData.max_yearly_salary" prefix="NTD "/>
             </div>
             <div class="flex items-center gap-4 mb-4">
                 <label for="description" class="font-semibold w-24">職缺描述</label>
@@ -168,16 +173,20 @@ onMounted(fetchJobs)
             </div>
         </Dialog>
     </div>
-    <DataTable :value="jobs" tableStyle="min-width: 60rem" :loading="loading">
-      <Column field="name" header="職缺名稱" sortable></Column>
+    <DataTable v-model:editingRows="editingRows" :value="jobs" tableStyle="min-width: 60rem" resizableColumns columnResizeMode="expand" :loading="loading" editMode="row" dataKey="id" @row-edit-save="onEditJob">
+      <Column field="name" header="職缺名稱" sortable>
+        <template #editor="{ data, field }">
+          <InputText v-model="data[field]"/>
+        </template>
+      </Column>
       <Column field="tier" header="優先順位" sortable>
-          <!-- <template #editor="{ data, field }">
-              <Select v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value" placeholder="Select a Status" fluid>
+          <template #editor="{ data, field }">
+              <Select v-model="data[field]" :options="tiers" optionLabel="label" optionValue="value" placeholder="選擇順位">
                   <template #option="slotProps">
-                      <Tag :value="slotProps.option.value" :severity="getStatusLabel(slotProps.option.value)" />
+                      <Tag :value="getTierLabel(slotProps.option.value)" :severity="getStatusLabel(slotProps.option.value)" />
                   </template>
               </Select>
-          </template> -->
+          </template>
           <template #body="slotProps">
             <Tag
               :value="getTierLabel(slotProps.data.tier)"
@@ -185,20 +194,31 @@ onMounted(fetchJobs)
             />
           </template>
       </Column>
-      <Column field="min_yearly_salary" header="年薪下限（NTD）" sortable></Column>
-      <Column field="max_yearly_salary" header="年薪上限（NTD）" sortable></Column>
+      <Column field="min_yearly_salary" header="年薪下限（NTD）" sortable>
+        <template #editor="{ data, field }">
+          <InputNumber v-model="data[field]"/>
+        </template>
+      </Column>
+      <Column field="max_yearly_salary" header="年薪上限（NTD）" sortable>
+        <template #editor="{ data, field }">
+          <InputNumber v-model="data[field]"/>
+        </template>
+      </Column>
       <Column field="applied_at" header="投遞時間" sortable>
+        <template #editor="{ data, field }">
+          <DatePicker v-model="data[field]"/>
+        </template>
         <template #body="{ data }">
           {{ formatDate(data.applied_at) }}
         </template>
       </Column>
-      <Column field="description" header="職缺描述" sortable></Column>
-      <Column header="操作">
-        <template #body="{ data }">
-          <Button icon="pi pi-pencil" class="mr-2" @click="onEditJob(data)" />
-          <Button icon="pi pi-trash" severity="danger" @click="onDeleteJob(data)" />
+      <Column field="description" header="職缺描述" sortable>
+        <template #editor="{ data, field }">
+          <Textarea v-model="data[field]"/>
         </template>
       </Column>
+      <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
+      <template #footer> 總共收藏了 {{ jobs ? jobs.length : 0 }} 個職缺！ </template>
     </DataTable>
   </div>
 </template>
