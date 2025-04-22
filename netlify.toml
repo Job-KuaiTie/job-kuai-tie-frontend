@@ -1,0 +1,9 @@
+[build]
+  # Directory containing your built files
+  publish = "dist"
+  command = "yarn run build-only"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
