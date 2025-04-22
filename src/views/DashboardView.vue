@@ -16,6 +16,7 @@ import type { Job, JobPayload } from '@/types/job'
 const editingRows = ref([]);
 
 const jobs = ref<Job[]>([])
+const job = ref({});
 const loading = ref(false)
 
 const tiers = [
@@ -61,7 +62,9 @@ const formatDate = (dateStr: string | null) => {
   return dateStr ? new Date(dateStr).toLocaleDateString() : '-'
 }
 
-const visible = ref(false);
+const JobDialog = ref(false);
+const deleteJobDialog = ref(false);
+
 const formData = ref<JobPayload>({
   name: '',
   tier: 1,
@@ -77,7 +80,7 @@ const onCreateJob = async () => {
   try {
     const response = await api.post<Job>('/jobs', formData.value)
     jobs.value.push(response) // update UI with new job
-    visible.value = false // close dialog
+    JobDialog.value = false // close dialog
     resetForm()
   } catch (error) {
     console.error('Create failed:', error)
@@ -85,7 +88,7 @@ const onCreateJob = async () => {
 }
 
 const onCancelDialog = () => {
-  visible.value = false // close dialog
+  JobDialog.value = false // close dialog
   resetForm()
 }
 
@@ -114,11 +117,17 @@ const onEditJob = async (event: DataTableRowEditSaveEvent) => {
     console.error('Update failed:', error)
   }
 }
-
-const onDeleteJob = async (id: string) => {
+const confirmDeleteJob = (data: Job) => {
+  job.value = data;
+  deleteJobDialog.value = true;
+};
+const onDeleteJob = async () => {
   try {
+    const id = job.value.id
     await api.delete(`/jobs/${id}`)
     jobs.value = jobs.value.filter(job => job.id !== id) // Remove from local state
+    job.value = {}; // Reset the job
+    deleteJobDialog.value = false; // close the dialog
   } catch (error) {
     console.error('Delete failed:', error)
   }
@@ -128,50 +137,63 @@ onMounted(fetchJobs)
 </script>
 
 <template>
+    <Dialog v-model:visible="JobDialog" modal header="新增職缺" :style="{ width: '25rem' }">
+      <div class="flex items-center gap-4 mb-4">
+          <label for="name" class="font-semibold w-24">職缺名稱</label>
+          <InputText id="name" class="flex-auto" v-model="formData.name" autocomplete="off" />
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+          <label for="tier" class="font-semibold w-24">優先順位</label>
+          <Dropdown
+            id="tier"
+            class="flex-auto"
+            :options="tiers"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="選擇順位"
+            v-model="formData.tier"
+            required
+          />
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+          <label for="applied_at" class="font-semibold w-24">投遞時間</label>
+          <DatePicker id="applied_at" class="flex-auto" v-model="formData.applied_at"/>
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+          <label for="min_yearly_salary" class="font-semibold w-24">年薪下限</label>
+          <InputNumber id="min_yearly_salary" class="flex-auto" v-model="formData.min_yearly_salary" prefix="NTD "/>
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+          <label for="max_yearly_salary" class="font-semibold w-24">年薪上限</label>
+          <InputNumber id="max_yearly_salary" class="flex-auto" v-model="formData.max_yearly_salary" prefix="NTD "/>
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+          <label for="description" class="font-semibold w-24">職缺描述</label>
+          <Textarea id="description" class="flex-auto" v-model="formData.description" autocomplete="off" rows="5" cols="30"/>
+      </div>
+      <div class="flex justify-end gap-2">
+          <Button type="button" label="Cancel" severity="secondary" @click="onCancelDialog"></Button>
+          <Button type="button" label="Save" @click="onCreateJob" />
+      </div>
+  </Dialog>
+  <Dialog v-model:visible="deleteJobDialog" :style="{ width: '25rem' }" header="確認刪除？" :modal="true">
+          <div class="flex items-center gap-4">
+              <i class="pi pi-exclamation-triangle !text-3xl" />
+              <span v-if="job"
+                  >你確定你想要刪除 <b>{{ job.name }}</b
+                  >?</span
+              >
+          </div>
+          <template #footer>
+              <Button label="No" icon="pi pi-times" text @click="deleteJobDialog = false" />
+              <Button label="Yes" icon="pi pi-check" @click="onDeleteJob" />
+          </template>
+  </Dialog>
   <div class="card">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">職缺清單</h2>
       <!-- <Button label="新增職缺" icon="pi pi-plus" @click="onCreateJob" /> -->
-      <Button label="新增職缺" icon="pi pi-plus" @click="visible = true" />
-        <Dialog v-model:visible="visible" modal header="新增職缺" :style="{ width: '25rem' }">
-            <div class="flex items-center gap-4 mb-4">
-                <label for="name" class="font-semibold w-24">職缺名稱</label>
-                <InputText id="name" class="flex-auto" v-model="formData.name" autocomplete="off" />
-            </div>
-            <div class="flex items-center gap-4 mb-4">
-                <label for="tier" class="font-semibold w-24">優先順位</label>
-                <Dropdown
-                  id="tier"
-                  class="flex-auto"
-                  :options="tiers"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="選擇順位"
-                  v-model="formData.tier"
-                  required
-                />
-            </div>
-            <div class="flex items-center gap-4 mb-4">
-                <label for="applied_at" class="font-semibold w-24">投遞時間</label>
-                <DatePicker id="applied_at" class="flex-auto" v-model="formData.applied_at"/>
-            </div>
-            <div class="flex items-center gap-4 mb-4">
-                <label for="min_yearly_salary" class="font-semibold w-24">年薪下限</label>
-                <InputNumber id="min_yearly_salary" class="flex-auto" v-model="formData.min_yearly_salary" prefix="NTD "/>
-            </div>
-            <div class="flex items-center gap-4 mb-4">
-                <label for="max_yearly_salary" class="font-semibold w-24">年薪上限</label>
-                <InputNumber id="max_yearly_salary" class="flex-auto" v-model="formData.max_yearly_salary" prefix="NTD "/>
-            </div>
-            <div class="flex items-center gap-4 mb-4">
-                <label for="description" class="font-semibold w-24">職缺描述</label>
-                <Textarea id="description" class="flex-auto" v-model="formData.description" autocomplete="off" rows="5" cols="30"/>
-            </div>
-            <div class="flex justify-end gap-2">
-                <Button type="button" label="Cancel" severity="secondary" @click="onCancelDialog"></Button>
-                <Button type="button" label="Save" @click="onCreateJob" />
-            </div>
-        </Dialog>
+      <Button label="新增職缺" icon="pi pi-plus" @click="JobDialog = true" />
     </div>
     <DataTable v-model:editingRows="editingRows" :value="jobs" tableStyle="min-width: 60rem" resizableColumns columnResizeMode="expand" :loading="loading" editMode="row" dataKey="id" @row-edit-save="onEditJob">
       <Column field="name" header="職缺名稱" sortable>
@@ -217,7 +239,12 @@ onMounted(fetchJobs)
           <Textarea v-model="data[field]"/>
         </template>
       </Column>
-      <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
+      <Column :rowEditor="true" bodyStyle="text-align:center"></Column>
+      <Column :exportable="false">
+        <template #body="slotProps">
+            <Button icon="pi pi-trash" text severity="danger" @click="confirmDeleteJob(slotProps.data)" />
+        </template>
+    </Column>
       <template #footer> 總共收藏了 {{ jobs ? jobs.length : 0 }} 個職缺！ </template>
     </DataTable>
   </div>
