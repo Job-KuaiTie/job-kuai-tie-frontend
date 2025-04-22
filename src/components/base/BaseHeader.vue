@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -9,6 +10,8 @@ const logout = () => {
   authStore.logout() // Remove token from store and localStorage
   router.push('/login') // Redirect to login page
 }
+const isLoggedIn = computed(() => !!authStore.token)
+
 </script>
 
 <template>
@@ -25,7 +28,7 @@ const logout = () => {
       </RouterLink>
       <section class="flex flex-row items-center">
         <div class="p-2">
-          <div v-if="!authStore.token">
+          <div v-if="!isLoggedIn">
             <RouterLink to="/login" class="font-medium text-xl text-primary-400 font-title mx-3"
               >登入</RouterLink
             >

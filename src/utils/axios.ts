@@ -3,8 +3,6 @@ import { useFlashMessageStore } from '@/stores/flashMessageStore'
 import { getErrorCodes } from '@/utils/errorCodes'
 import { useAuthStore } from '@/stores/authStore'
 
-const authStore = useAuthStore()
-
 // Define a type for the API response
 // interface ApiResponse<T> {
 //   data: T
@@ -18,6 +16,7 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use((config) => {
+  const authStore = useAuthStore()
   const token = authStore.token // Get the token from the store or storage
 
   if (token) {
