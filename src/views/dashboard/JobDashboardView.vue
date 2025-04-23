@@ -48,7 +48,7 @@ const getStatusLabel = (status) => {
 const fetchJobs = async () => {
   loading.value = true
   try {
-    const response = await api.get<Job[]>('/jobs')
+    const response = await api.get<Job[]>('/jobs/')
     jobs.value = response
   } catch (error) {
     console.log(error)
@@ -99,7 +99,7 @@ const onSaveJob = async () => {
 
 const onCreateJob = async () => {
   try {
-    const response = await api.post<Job>('/jobs', jobData.value)
+    const response = await api.post<Job>('/jobs/', jobData.value)
     jobs.value.push(response) // update UI with new job
     JobDialog.value = false // close dialog
     resetForm()

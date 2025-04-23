@@ -23,7 +23,7 @@ const flashMessageStore = useFlashMessageStore()
 const fetchCompanies = async () => {
   loading.value = true
   try {
-    const response = await api.get<Company[]>('/companies')
+    const response = await api.get<Company[]>('/companies/')
     companies.value = response
   } catch (error) {
     console.log(error)
@@ -70,7 +70,7 @@ const onSaveCompany = async () => {
 
 const onCreateCompany = async () => {
   try {
-    const response = await api.post<Company>('/companies', companyData.value)
+    const response = await api.post<Company>('/companies/', companyData.value)
     companies.value.push(response) // update UI with new company
     CompanyDialog.value = false // close dialog
     resetForm()
