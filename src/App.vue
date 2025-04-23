@@ -8,9 +8,16 @@ import { onMounted } from 'vue'
 import api from '@/utils/axios'
 
 onMounted(() => {
-  api.get('/')
-    .then(() => console.log('🔥 API warmed up'))
-    .catch(err => console.warn('⚠️ Failed to warm up API:', err))
+  if (!sessionStorage.getItem('apiWarmed')) {
+    api.get('/') // or your health check endpoint
+      .then(() => {
+        console.log('✅ API warmed up')
+        sessionStorage.setItem('apiWarmed', 'true')
+      })
+      .catch((err) => {
+        console.warn('⚠️ API warm-up failed', err)
+      })
+  }
 })
 </script>
 
