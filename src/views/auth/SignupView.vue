@@ -43,7 +43,7 @@ const [password, passwordAttrs] = defineField('password')
 const onSubmit = handleSubmit(async (formData) => {
   try {
     // Step 1: Attempt to create the account
-    await api.post<unknown>('accounts', formData)
+    await api.post<unknown>('/accounts/', formData)
 
     // Step 2: If signup succeeds, send login request
     const params = new URLSearchParams()
