@@ -1,17 +1,29 @@
 import axios from 'axios'
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
 import { getErrorCodes } from '@/utils/errorCodes'
+import { useAuthStore } from '@/stores/authStore'
 
 // Define a type for the API response
-interface ApiResponse<T> {
-  data: T
-  status: number
-  message?: string
-}
+// interface ApiResponse<T> {
+//   data: T
+//   status: number
+//   message?: string
+// }
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL, // Use environment variable for the base URL
   timeout: 10000, // Request timeout in milliseconds
+})
+
+apiClient.interceptors.request.use((config) => {
+  const authStore = useAuthStore()
+  const token = authStore.token // Get the token from the store or storage
+
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`
+  }
+
+  return config
 })
 
 apiClient.interceptors.response.use(
@@ -28,7 +40,9 @@ apiClient.interceptors.response.use(
         flashMessageStore.setFlashMessage(getErrorCodes(data?.error?.code), 'error')
       }
       // 2. Handle authentication errors
-      else if (status === 401 || status === 403) {
+      else if (status === 401) {
+        flashMessageStore.setFlashMessage('操作錯誤，請再試一次。', 'error')
+      } else if (status === 403) {
         flashMessageStore.setFlashMessage('您沒有權限執行此操作，請重新登入。', 'error')
       }
 
@@ -55,9 +69,9 @@ apiClient.interceptors.response.use(
 )
 
 // GET method
-const get = async <T>(url: string, config?: Record<string, unknown>): Promise<ApiResponse<T>> => {
+const get = async <T>(url: string, config?: Record<string, unknown>): Promise<T> => {
   try {
-    const response = await apiClient.get<ApiResponse<T>>(url, config)
+    const response = await apiClient.get<T>(url, config)
     return response.data
   } catch (error) {
     throw error
@@ -69,18 +83,52 @@ const post = async <T>(
   url: string,
   data: unknown,
   config?: Record<string, unknown>,
-): Promise<ApiResponse<T>> => {
+): Promise<T> => {
   try {
-    const response = await apiClient.post<ApiResponse<T>>(url, data, config)
-    console.log('response: ' + response)
+    const response = await apiClient.post<T>(url, data, config)
     return response.data
   } catch (error) {
     throw error
   }
 }
 
+// PATCH method
+const patch = async <T>(
+  url: string,
+  data: unknown,
+  config?: Record<string, unknown>,
+): Promise<T> => {
+  try {
+    const response = await apiClient.patch<T>(url, data, config)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+// DELETE method
+const remove = async <T>(url: string, config?: Record<string, unknown>): Promise<T> => {
+  try {
+    const response = await apiClient.delete<T>(url, config)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+// const setAuthToken = (token: string | null) => {
+//   if (token) {
+//     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+//   } else {
+//     delete apiClient.defaults.headers.common['Authorization']
+//   }
+// }
+
 // Export methods for use in Vue components
 export default {
   get,
   post,
+  patch,
+  delete: remove, // 'delete' is a reserved word, so we alias it
+  // setAuthToken,
 }

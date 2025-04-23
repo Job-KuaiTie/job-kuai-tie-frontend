@@ -12,7 +12,12 @@ declare module 'vue' {
     BaseLineChart: typeof import('./src/components/base/BaseLineChart.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chart: typeof import('primevue/chart')['default']
+    Column: typeof import('primevue/column')['default']
+    copy: typeof import('./src/components/form/TextInputField copy.vue')['default']
+    DataTable: typeof import('primevue/datatable')['default']
+    Dialog: typeof import('primevue/dialog')['default']
     Divider: typeof import('primevue/divider')['default']
+    Dropdown: typeof import('primevue/dropdown')['default']
     FlashMessage: typeof import('./src/components/base/FlashMessage.vue')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
     HomePageForm: typeof import('./src/components/form/HomePageForm.vue')['default']
@@ -22,8 +27,18 @@ declare module 'vue' {
     Message: typeof import('primevue/message')['default']
     NumberInputField: typeof import('./src/components/form/NumberInputField.vue')['default']
     NumberInputGroup: typeof import('./src/components/form/NumberInputGroup.vue')['default']
+    Password: typeof import('primevue/password')['default']
+    PasswordInputField: typeof import('./src/components/form/PasswordInputField.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Select: typeof import('primevue/select')['default']
+    Tab: typeof import('primevue/tab')['default']
+    TabList: typeof import('primevue/tablist')['default']
+    Tabs: typeof import('primevue/tabs')['default']
+    Tag: typeof import('primevue/tag')['default']
     TextInputField: typeof import('./src/components/form/TextInputField.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    Ripple: typeof import('primevue/ripple')['default']
   }
 }

@@ -15,6 +15,21 @@
     font-style: normal;
     src: url('./fonts/jf-openhuninn-2.1.ttf') format('truetype');
   }
+  @font-face {
+    font-family: 'GenSenRounded-B';
+    font-style: normal;
+    src: url('./fonts/GenSenRounded2TW-B.otf') format('opentype');
+  }
+  @font-face {
+    font-family: 'GenSenRounded-L';
+    font-style: normal;
+    src: url('./fonts/GenSenRounded2TW-L.otf') format('opentype');
+  }
+  @font-face {
+    font-family: 'GenSenRounded-R';
+    font-style: normal;
+    src: url('./fonts/GenSenRounded2TW-R.otf') format('opentype');
+  }
 
   a:hover {
     @apply text-primary-500;
