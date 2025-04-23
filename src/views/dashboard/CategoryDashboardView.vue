@@ -39,7 +39,7 @@ const getColorLabel = (value: string) => {
 const fetchCategories = async () => {
   loading.value = true
   try {
-    const response = await api.get<Category[]>('/categories')
+    const response = await api.get<Category[]>('/categories/')
     categories.value = response
   } catch (error) {
     console.log(error)
@@ -85,7 +85,7 @@ const onSaveCategory = async () => {
 
 const onCreateCategory = async () => {
   try {
-    const response = await api.post<Category>('/categories', categoryData.value)
+    const response = await api.post<Category>('/categories/', categoryData.value)
     categories.value.push(response) // update UI with new category
     CategoryDialog.value = false // close dialog
     resetForm()
