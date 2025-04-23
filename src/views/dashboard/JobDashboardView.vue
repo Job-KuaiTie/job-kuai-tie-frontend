@@ -8,6 +8,7 @@ import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea';
 import DatePicker from 'primevue/datepicker';
+import { useFlashMessageStore } from '@/stores/flashMessageStore'
 
 import api from '@/utils/axios'
 import type { Job, JobPayload } from '@/types/job'
@@ -18,6 +19,8 @@ const loading = ref(false)
 
 const JobDialog = ref(false);
 const deleteJobDialog = ref(false);
+
+const flashMessageStore = useFlashMessageStore()
 
 const tiers = [
   { label: '夢想工作', value: 1 },
@@ -55,7 +58,12 @@ const fetchJobs = async () => {
 }
 
 const formatDate = (dateStr: string | null) => {
-  return dateStr ? new Date(dateStr).toLocaleDateString() : '-'
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  const y = date.getFullYear()
+  const m = date.getMonth() + 1
+  const d = date.getDate()
+  return `${m} 月 ${d} 日 ${y} 年`
 }
 
 const jobData = ref<JobPayload>({
@@ -95,6 +103,7 @@ const onCreateJob = async () => {
     jobs.value.push(response) // update UI with new job
     JobDialog.value = false // close dialog
     resetForm()
+    flashMessageStore.setFlashMessage('新增職缺成功', 'success')
   } catch (error) {
     console.error('Create failed:', error)
   }
@@ -108,8 +117,9 @@ const onEditJob = async () => {
     if (index !== -1) {
       jobs.value[index] = response // Update local state
     }
-    resetForm()
     JobDialog.value = false // close dialog
+    resetForm()
+    flashMessageStore.setFlashMessage('更新職缺成功', 'success')
   } catch (error) {
     console.error('Update failed:', error)
   }
@@ -175,9 +185,9 @@ const onDeleteJob = async () => {
     const id = jobData.value.id
     await api.delete(`/jobs/${id}`)
     jobs.value = jobs.value.filter(job => job.id !== id) // Remove from local state
-    job.value = {}; // Reset the job
     deleteJobDialog.value = false; // close the dialog
     resetForm()
+    flashMessageStore.setFlashMessage('已刪除職缺！', 'success')
   } catch (error) {
     console.error('Delete failed:', error)
   }
@@ -206,7 +216,7 @@ onMounted(fetchJobs)
           />
       </div>
       <div class="flex items-center gap-4 mb-4">
-          <label for="applied_at" class="font-semibold w-24">投遞時間</label>
+          <label for="applied_at" class="font-semibold w-24">投遞日期</label>
           <DatePicker id="applied_at" class="flex-auto" v-model="jobData.applied_at"/>
       </div>
       <div class="flex items-center gap-4 mb-4">
@@ -229,7 +239,7 @@ onMounted(fetchJobs)
   <Dialog v-model:visible="deleteJobDialog" :style="{ width: '25rem' }" header="確認刪除？" :modal="true">
           <div class="flex items-center gap-4">
               <i class="pi pi-exclamation-triangle !text-3xl" />
-              <span v-if="job"
+              <span v-if="jobData.name"
                   >你確定你想要刪除 <span class="font-semibold">{{ jobData.name }}</span
                   >?</span
               >
@@ -240,8 +250,8 @@ onMounted(fetchJobs)
           </template>
   </Dialog>
   <div class="card">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">職缺清單</h2>
+    <div class="flex justify-end items-end mb-4">
+      <!-- <h2 class="text-xl font-semibold">職缺清單</h2> -->
       <!-- <Button label="新增職缺" icon="pi pi-plus" @click="onCreateJob" /> -->
       <Button label="新增職缺" icon="pi pi-plus" @click="openNewJob" />
     </div>
@@ -256,13 +266,18 @@ onMounted(fetchJobs)
             />
           </template>
       </Column>
+      <Column field="applied_at" header="投遞日期" sortable>
+        <template #body="{ data }">
+          {{ formatDate(data.applied_at) }}
+        </template>
+      </Column>
       <Column field="min_yearly_salary" header="年薪下限（NTD）" sortable>
       </Column>
       <Column field="max_yearly_salary" header="年薪上限（NTD）" sortable>
       </Column>
-      <Column field="applied_at" header="投遞時間" sortable>
+      <Column field="created_at" header="新增職缺日期" sortable>
         <template #body="{ data }">
-          {{ formatDate(data.applied_at) }}
+          {{ formatDate(data.created_at) }}
         </template>
       </Column>
       <Column field="description" header="職缺描述" sortable>

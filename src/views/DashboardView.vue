@@ -21,31 +21,31 @@ watch(() => route.path, (newPath) => {
 </script>
 
 <template>
-<Tabs v-model="activeTab">
-  <TabList>
-    <Tab
-      v-for="tab in items"
-      :key="tab.label"
-      :value="tab.route"
-    >
-      <router-link
-        v-slot="{ href, navigate }"
-        :to="tab.route"
-        custom
+  <Tabs v-model="activeTab">
+    <TabList>
+      <Tab
+        v-for="tab in items"
+        :key="tab.label"
+        :value="tab.route"
       >
-        <a
-          v-ripple
-          :href="href"
-          @click="navigate"
-          class="flex items-center gap-2 text-inherit"
+        <router-link
+          v-slot="{ href, navigate }"
+          :to="tab.route"
+          custom
         >
-          <i :class="tab.icon" />
-          <span>{{ tab.label }}</span>
-        </a>
-      </router-link>
-    </Tab>
-  </TabList>
-</Tabs>
+          <a
+            v-ripple
+            :href="href"
+            @click="navigate"
+            class="flex items-center gap-2 text-inherit"
+          >
+            <i :class="tab.icon" />
+            <span>{{ tab.label }}</span>
+          </a>
+        </router-link>
+      </Tab>
+    </TabList>
+  </Tabs>
 
-<RouterView />
+  <RouterView />
 </template>

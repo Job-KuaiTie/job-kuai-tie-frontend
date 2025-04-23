@@ -6,7 +6,7 @@ export const useFlashMessageStore = defineStore('flashMessage', () => {
   const message = ref<string | null>(null) // Current flash message
   const type = ref<'error' | 'success' | 'info' | 'warn' | 'secondary' | 'contrast'>('success')
 
-  const setFlashMessage = (msg: string, msgType: 'error' | 'success' | 'info') => {
+  const setFlashMessage = (msg: string, msgType: 'error' | 'success' | 'info' | 'warn' | 'secondary' | 'contrast') => {
     message.value = msg
     type.value = msgType
 

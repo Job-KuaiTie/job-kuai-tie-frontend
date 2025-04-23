@@ -2,13 +2,16 @@
 import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { useFlashMessageStore } from '@/stores/flashMessageStore'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const flashMessageStore = useFlashMessageStore()
 
 const logout = () => {
   authStore.logout() // Remove token from store and localStorage
   router.push('/') // Redirect to home page
+  flashMessageStore.setFlashMessage('登出成功，下次見！', 'info')
 }
 const isLoggedIn = computed(() => !!authStore.token)
 </script>
