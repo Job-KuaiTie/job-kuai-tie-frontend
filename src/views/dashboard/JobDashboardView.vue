@@ -166,12 +166,8 @@ const mapJobData = (data: Job) => {
 }
 
 const editJob = (data: Job) => {
-  console.log("Before mapJobData")
-  console.log(data)
   newJob.value = false;
   mapJobData(data)
-  console.log("After mapJobData")
-  console.log(data)
   JobDialog.value = true;
 };
 

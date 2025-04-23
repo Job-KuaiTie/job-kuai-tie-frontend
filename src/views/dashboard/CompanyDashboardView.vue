@@ -5,9 +5,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea';
-import DatePicker from 'primevue/datepicker';
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
 
 import api from '@/utils/axios'
@@ -131,12 +129,8 @@ const mapCompanyData = (data: Company) => {
 }
 
 const editCompany = (data: Company) => {
-  console.log("Before mapCompanyData")
-  console.log(data)
   newCompany.value = false;
   mapCompanyData(data)
-  console.log("After mapCompanyData")
-  console.log(data)
   CompanyDialog.value = true;
 };
 
