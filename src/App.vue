@@ -9,7 +9,8 @@ import api from '@/utils/axios'
 
 onMounted(() => {
   if (!sessionStorage.getItem('apiWarmed')) {
-    api.get('/') // or your health check endpoint
+    api
+      .get('/') // or your health check endpoint
       .then(() => {
         console.log('✅ API warmed up')
         sessionStorage.setItem('apiWarmed', 'true')

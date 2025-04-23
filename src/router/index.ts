@@ -71,7 +71,7 @@ const router = createRouter({
 })
 
 router.afterEach((to) => {
-  const defaultTitle = '躺卷｜人生財務規劃輕鬆算'
+  const defaultTitle = '求職快貼｜找工作就貼一下！'
   // nullish coalescing operator. allows you a default value when the left-hand operand is null or undefined.
   document.title = to.meta?.title ?? defaultTitle
 })

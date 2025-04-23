@@ -97,7 +97,7 @@ const onSubmit = handleSubmit(async (formData) => {
     <Divider />
     <div class="flex flex-row justify-center">
       <div class="text-sm text-stone-500">
-        第一次用躺卷？
+        第一次用求職快貼？
         <RouterLink to="/signup" class="text-primary-400">註冊</RouterLink>
       </div>
     </div>
