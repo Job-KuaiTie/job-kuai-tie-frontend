@@ -49,8 +49,8 @@ const onSubmit = handleSubmit(async (formData) => {
     authStore.setToken(data.access_token)
     flashMessageStore.setFlashMessage('登入成功', 'success')
 
-    // Redirect to the previous access, or /dashboard
-    const redirectPath = route.query.redirect || '/dashboard'
+    // Redirect to the previous access, or /job
+    const redirectPath = route.query.redirect || '/jobs'
     router.push(redirectPath as string)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {

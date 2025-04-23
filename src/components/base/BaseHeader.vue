@@ -39,7 +39,30 @@ const isLoggedIn = computed(() => !!authStore.token)
             >
           </div>
           <div v-else>
-            <button @click="logout" class="font-medium text-xl text-primary-400 font-title mx-3">
+            <RouterLink to="/jobs" class="font-medium text-xl text-primary-400 font-title mx-3">
+              <i class="pi pi-briefcase text-lg mr-1" />
+              職缺
+            </RouterLink>
+
+            <RouterLink
+              to="/companies"
+              class="font-medium text-xl text-primary-400 font-title mx-3"
+            >
+              <i class="pi pi-building text-lg mr-1" />
+
+              公司</RouterLink
+            >
+            <RouterLink
+              to="/categories"
+              class="font-medium text-xl text-primary-400 font-title mx-3"
+            >
+              <i class="pi pi-tags text-lg mr-1" />
+              類別</RouterLink
+            >
+            <button
+              @click="logout"
+              class="ml-8 font-medium text-xl text-primary-400 font-title mx-3"
+            >
               登出
             </button>
           </div>

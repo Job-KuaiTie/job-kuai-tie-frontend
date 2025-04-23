@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import dashboardRoutes from './dashboardRouter'
 import { useAuthStore } from '@/stores/authStore'
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
 
@@ -19,14 +18,22 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('../views/DashboardView.vue'),
-      meta: { title: '關於求職快貼', requiresAuth: true },
-      children: [
-        { path: '', redirect: '/dashboard/job' }, // default tab
-        ...dashboardRoutes,
-      ]
+      path: '/jobs',
+      name: 'jobs',
+      component: () => import('../views/dashboard/JobDashboardView.vue'),
+      meta: { title: '職缺列表', requiresAuth: true },
+    },
+    {
+      path: '/companies',
+      name: 'companies',
+      component: () => import('../views/dashboard/CompanyDashboardView.vue'),
+      meta: { title: '公司列表', requiresAuth: true },
+    },
+    {
+      path: '/categories',
+      name: 'categories',
+      component: () => import('../views/dashboard/CategoryDashboardView.vue'),
+      meta: { title: '類別列表', requiresAuth: true },
     },
     {
       path: '/about',
@@ -81,7 +88,7 @@ router.beforeEach((to, from, next) => {
       query: { redirect: to.fullPath },
     })
   } else if (to.path === '/' && isLoggedIn) {
-    next('/dashboard')
+    next('/jobs')
   } else {
     next()
   }
