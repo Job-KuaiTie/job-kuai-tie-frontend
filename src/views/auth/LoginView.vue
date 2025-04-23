@@ -1,6 +1,6 @@
 <style scoped></style>
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useForm } from 'vee-validate'
@@ -12,6 +12,7 @@ import PasswordInputField from '@/components/form/PasswordInputField.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const flashMessageStore = useFlashMessageStore()
 
 // Define form schema and validation
@@ -47,7 +48,10 @@ const onSubmit = handleSubmit(async (formData) => {
 
     authStore.setToken(data.access_token)
     flashMessageStore.setFlashMessage('登入成功', 'success')
-    router.push({ name: 'home' })
+
+    // Redirect to the previous access, or /dashboard
+    const redirectPath = route.query.redirect || '/dashboard'
+    router.push(redirectPath as string)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     if (err.response?.data?.error?.fields) {
