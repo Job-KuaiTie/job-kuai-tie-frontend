@@ -7,3 +7,10 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Redirect to api without CORS request from browser
+[[redirects]]
+  from = "/api/*"
+  to = "https://job-kuai-tie-api.river1440.work/:splat"
+  status = 200
+  force = true
