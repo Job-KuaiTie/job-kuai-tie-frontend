@@ -50,7 +50,7 @@ const onSubmit = handleSubmit(async (formData) => {
     params.append('username', formData.email)
     params.append('password', formData.password)
 
-    const data = await api.post<{ access_token: string }>('token', params)
+    const data = await api.post<{ access_token: string }>('/token', params)
 
     // Step 3: Store token & redirect
     authStore.setToken(data.access_token)

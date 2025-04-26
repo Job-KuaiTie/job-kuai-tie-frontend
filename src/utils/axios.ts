@@ -2,6 +2,8 @@ import axios from 'axios'
 import { useFlashMessageStore } from '@/stores/flashMessageStore'
 import { getErrorCodes } from '@/utils/errorCodes'
 import { useAuthStore } from '@/stores/authStore'
+// Use environment variable for the base URL, empty string if not provided
+const base = import.meta.env.VITE_API_BASE_URL || '/api'
 
 // Define a type for the API response
 // interface ApiResponse<T> {
@@ -11,7 +13,7 @@ import { useAuthStore } from '@/stores/authStore'
 // }
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL, // Use environment variable for the base URL
+  baseURL: base,
   timeout: 10000, // Request timeout in milliseconds
 })
 
@@ -25,6 +27,7 @@ apiClient.interceptors.request.use((config) => {
 
   return config
 })
+
 
 apiClient.interceptors.response.use(
   (response) => response,
